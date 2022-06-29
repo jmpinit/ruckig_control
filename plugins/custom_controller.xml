@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<library path="lib/libRuckigController">
+    <class
+           name="ruckig_control/RuckigController"
+           type="ruckig_control::RuckigController"
+           base_class_type="controller_interface::ControllerBase">
+        <description>RuckigController</description>
+    </class>
+</library>

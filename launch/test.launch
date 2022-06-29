@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<launch>
+  <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find ruckig_controller)/custom_rosconsole.conf"/> -->
+
+  <!-- <include file="$(find waldo_moveit)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include> -->
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <!-- <rosparam file="$(find waldo_moveit)/config/moveit_sim_hw_interface.yaml" command="load"/> -->
+  <rosparam file="$(find waldo_control)/config/ros_controllers_ruckig.yaml" command="load"/>
+
+  <!-- Load RSI settings -->
+  <rosparam file="$(find waldo_control)/config/rsi_params.yaml" command="load"/>
+
+  <!-- Load standard kuka controller joint names from YAML file to parameter server -->
+  <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
+
+  <!-- <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface"
+    type="kuka_hardware_interface_node" respawn="false"
+    output="screen"
+    required="true"/> -->
+
+  <!-- Load controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+	      args="ruckig_controller joint_state_controller"/>
+</launch>
