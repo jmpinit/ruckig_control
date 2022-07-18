@@ -1,0 +1,52 @@
+<!--
+  For now this depends on the packages here:
+  - https://github.com/jmpinit/waldo_ros
+  - https://github.com/jmpinit/crash_relaxed_ik_ros1
+
+  To get it working you will want the context here:
+  https://hackaday.io/project/164468-crash/log/207640-real-time-motion-planning-with-collisionik
+
+  I want to make it easier at some point but no promises - for now it's just a PoC.
+-->
+<?xml version="1.0" ?>
+<launch>
+  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+  <include file="$(find waldo_moveit)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include>
+
+  <!-- Given the published joint states, publish tf for the robot links -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find waldo_moveit)/config/moveit_sim_hw_interface.yaml" command="load"/>
+  <rosparam file="$(find waldo_control)/config/ros_controllers_ruckig.yaml" command="load"/>
+
+  <!-- Load RSI settings -->
+  <rosparam file="$(find waldo_control)/config/rsi_params.yaml" command="load"/>
+
+  <!-- Load standard kuka controller joint names from YAML file to parameter server -->
+  <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
+
+  <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface"
+    type="kuka_hardware_interface_node" respawn="false"
+    output="screen"
+    required="true"/>
+
+  <!-- Load controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+	      args="ruckig_controller joint_state_controller"/>
+
+  <node pkg="relaxed_ik_ros1" type="relaxed_ik_rust.py" name="relaxed_ik" output="screen"/>
+
+  <arg name="show_obstacles" default="true"/>
+  <node pkg="relaxed_ik_ros1" type="rviz_viewer.py" name="rviz_viewer" output="screen" args="$(arg show_obstacles)"/>
+
+  <!-- Forwards IK solutions to controller -->
+  <!-- TODO move to another package -->
+  <arg name="node_start_delay" default="5.0" />  
+  <node pkg="ruckig_control" name="wiggle" type="wiggle.py" output="screen" pkg="ruckig_controller" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " />
+
+  <!-- Enable CollisionIK solver -->
+  <rosparam param="/simulation_time">go</rosparam>
+</launch>

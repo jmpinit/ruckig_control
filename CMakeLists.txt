@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(ruckig_control)
 
-# C++ 11
 if(NOT "${CMAKE_CXX_STANDARD}")
   set(CMAKE_CXX_STANDARD 11)
 endif()
@@ -17,14 +16,13 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   joint_limits_interface
   roscpp
-  sensor_msgs
   std_msgs
   trajectory_msgs
-  urdf
 )
 
+find_package(ruckig REQUIRED)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-# find_package(Gflags REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
@@ -37,19 +35,15 @@ catkin_package(
     hardware_interface
     joint_limits_interface
     roscpp
-    sensor_msgs
     std_msgs
     trajectory_msgs
-    urdf
   LIBRARIES
     generic_hw_control_loop
     generic_hw_interface
     sim_hw_interface
 )
 
-###########
-## Build ##
-###########
+## Build --------------------------------------------------------------
 
 include_directories(
   include/
@@ -67,6 +61,7 @@ target_include_directories(RuckigController PUBLIC
   ${catkin_INCLUDE_DIRS})
 
 target_link_libraries(RuckigController PUBLIC
+  ruckig::ruckig
   ${catkin_LIBRARIES})
 
 # Require C++11
